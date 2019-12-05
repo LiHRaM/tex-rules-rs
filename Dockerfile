@@ -9,7 +9,7 @@ RUN cargo build --release
 
 # Add this package to a minimal container image.
 # Should be roughly the size of the compiled program.
-FROM scratch
+FROM alpine
 COPY --from=builder \
     /home/rust/src/target/x86_64-unknown-linux-musl/release/tex_rules /usr/bin/
 WORKDIR /tex
