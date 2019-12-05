@@ -37,8 +37,15 @@ pub fn parse_from_path(path: &PathBuf) -> Result<()> {
 }
 
 pub fn parse_line(line: &str) -> Result<(), ()> {
+    let line = line.as_bytes();
+    let search = TwoWaySearcher::new("%".as_bytes());
+    let res = search.search_in(line);
+    let line = match res {
+        None => line,
+        Some(i) => &line[..i],
+    };
     let search = TwoWaySearcher::new(". ".as_bytes());
-    let res = search.search_in(line.as_bytes());
+    let res = search.search_in(line);
 
     match res {
         None => Ok(()),
@@ -59,6 +66,13 @@ mod tests {
     #[test]
     fn test_good_file() {
         let file = include_str!("files/good.tex");
+        let result = parse_line(file);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_comments_file() {
+        let file = include_str!("files/comments.tex");
         let result = parse_line(file);
         assert!(result.is_ok());
     }
