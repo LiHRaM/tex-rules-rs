@@ -25,7 +25,7 @@ pub fn parse_from_path(path: &PathBuf) -> Result<()> {
                 Result::Ok(_) => (),
                 Result::Err(_) => {
                     succ = false;
-                    println!("{}:{} {:?}", file_name, i, &line)
+                    println!("{}:{} {:?}", file_name, i+1, &line)
                 }
             }
         }
