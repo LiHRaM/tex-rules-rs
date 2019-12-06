@@ -66,22 +66,22 @@ mod tests {
     use super::*;
     #[test]
     fn test_bad_file() {
-        let file = include_str!("files/bad.tex");
-        let result = parse_line(file);
+        let line = "This document writes several sentences on one line. Like. This.";
+        let result = parse_line(line);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_good_file() {
-        let file = include_str!("files/good.tex");
-        let result = parse_line(file);
+        let line = "This is a normal line.";
+        let result = parse_line(line);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_comments_file() {
-        let file = include_str!("files/comments.tex");
-        let result = parse_line(file);
+        let line = "% Nobody. Cares. About. Comments.";
+        let result = parse_line(line);
         assert!(result.is_ok());
     }
 
