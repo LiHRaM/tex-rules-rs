@@ -1,3 +1,4 @@
+use anyhow::Result;
 use glob::glob;
 use memmem::Searcher;
 use memmem::TwoWaySearcher;
@@ -5,7 +6,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::path::PathBuf;
-use anyhow::Result;
 
 pub fn find_tex_files() -> impl Iterator<Item = PathBuf> {
     glob("./**/*.tex")
@@ -25,31 +25,39 @@ pub fn parse_from_path(path: &PathBuf) -> Result<()> {
                 Result::Ok(_) => (),
                 Result::Err(_) => {
                     succ = false;
-                    println!("{}:{} {:?}", file_name, i+1, &line)
+                    println!("{}:{} {:?}", file_name, i + 1, &line)
                 }
             }
         }
     }
-    match succ {
-        true => Ok(()),
-        false => Err(anyhow::anyhow!("Errors in {:?}", &path))
+    if succ {
+        Ok(())
+    } else {
+        Err(anyhow::anyhow!("Errors in {:?}", &path))
     }
 }
 
 pub fn parse_line(line: &str) -> Result<(), ()> {
     let line = line.as_bytes();
-    let search = TwoWaySearcher::new("%".as_bytes());
+    let search = TwoWaySearcher::new(b"%");
     let res = search.search_in(line);
     let line = match res {
         None => line,
         Some(i) => &line[..i],
     };
-    let search = TwoWaySearcher::new(". ".as_bytes());
+    let search = TwoWaySearcher::new(b". ");
     let res = search.search_in(line);
 
     match res {
         None => Ok(()),
-        Some(_) => Err(()),
+        Some(i) => {
+            let line = String::from_utf8(line[i + 1..].to_vec()).expect("invalid utf8");
+            if line.trim_end().is_empty() {
+                Ok(())
+            } else {
+                Err(())
+            }
+        }
     }
 }
 
@@ -74,6 +82,13 @@ mod tests {
     fn test_comments_file() {
         let file = include_str!("files/comments.tex");
         let result = parse_line(file);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_whitespace_line() {
+        let line = "This should be fine. ";
+        let result = parse_line(line);
         assert!(result.is_ok());
     }
 }
