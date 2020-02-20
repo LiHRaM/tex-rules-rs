@@ -1,14 +1,15 @@
 use anyhow::Result;
+use rayon::prelude::*;
 
 mod lib;
 fn main() -> Result<()> {
-    let mut succ = true;
-    for path in lib::find_tex_files() {
-        if lib::parse_from_path(&path).is_err() {
-            succ = false;
-        }
-    }
-    if succ {
+    let errored = lib::find_tex_files()
+        .collect::<Vec<_>>()
+        .par_iter()
+        .map(|path| lib::parse_from_path(&path).is_err())
+        .reduce(|| false, |acc, elem| acc && elem);
+
+    if !errored {
         Ok(())
     } else {
         Err(anyhow::anyhow!("Errors were detected."))
