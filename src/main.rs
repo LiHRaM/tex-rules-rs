@@ -7,7 +7,7 @@ fn main() -> Result<()> {
         .collect::<Vec<_>>()
         .par_iter()
         .map(|path| lib::parse_from_path(&path).is_err())
-        .reduce(|| false, |acc, elem| acc && elem);
+        .reduce(|| false, |acc, elem| acc || elem);
 
     if !errored {
         Ok(())
